@@ -1,11 +1,12 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
-import {HomeContainer} from "./src/screens/Home"
+import React from "react";
+import { StatusBar } from "expo-status-bar";
+import { StyleSheet, View } from "react-native";
+import { HomeContainer } from "./src/screens/Home";
 
 export default function App() {
   return (
     <View style={styles.container}>
-      <HomeContainer/>
+      <HomeContainer />
       <StatusBar style="auto" />
     </View>
   );
@@ -14,8 +15,8 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
