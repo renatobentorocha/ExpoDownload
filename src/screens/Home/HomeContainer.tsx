@@ -6,20 +6,12 @@ import React, {
   useState,
 } from "react";
 import { PexelsVideo, usePexelsAPI } from "../../hooks/usePexelsAPI";
-import {
-  Dimensions,
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useFileDownload } from "../../hooks/useFileDownload";
 import { DownloadProgressData, DownloadResumable } from "expo-file-system";
 import { VideoPlayer } from "../../components/VideoPlayer";
 import { AntDesign } from "@expo/vector-icons";
-import { Entypo } from "@expo/vector-icons";
-import { DownloadButtonAction } from "../../components/DownloadButtonAction/DownloadButtonAction";
+import { HomeContainerContent } from "./HomeContainerContent";
 
 type ProgressProps = PropsWithChildren;
 
@@ -57,14 +49,15 @@ export function HomeContainer() {
   const handleDownloadPress = useCallback(
     (id: number) => {
       const selected = video.find((v) => v.id === id);
-      const videosfiles = selected?.video_files.find(
-        (v) => v.width === selected.width && v.height === selected.height
+      const sorted = selected?.video_files.sort(
+        (a, b) => a.width * a.height - b.width * b.height
       );
 
-      if (videosfiles) {
+      if (sorted) {
+        const videoFile = sorted[0];
         const result = fileDownload.retrive(
-          videosfiles.id.toString() + "." + videosfiles.file_type.split("/")[1],
-          videosfiles.link,
+          videoFile.id.toString() + "." + videoFile.file_type.split("/")[1],
+          videoFile.link,
           onProgress,
           (v: "SUCCESS" | "ERROR" | "IDLE") => setDownloadEndWith(v)
         );
@@ -75,34 +68,31 @@ export function HomeContainer() {
     [fileDownload, video]
   );
 
+  const handlePause = useCallback(() => {
+    if (downloadResult) {
+      fileDownload.pause(downloadResult);
+    }
+  }, [downloadResult, fileDownload]);
+
+  const handleResume = useCallback(() => {
+    if (downloadResult) {
+      fileDownload.resume(downloadResult);
+    }
+  }, [downloadResult, fileDownload]);
+
   const render = useCallback(
     (v: PexelsVideo) => {
       return (
-        <View style={styles.image} key={`${v.id}`}>
-          <Image source={{ uri: v.image }} style={styles.image} />
-          <View style={styles.actions}>
-            <DownloadButtonAction onPress={() => handleDownloadPress(v.id)}>
-              <AntDesign name="download" size={24} color="white" />
-            </DownloadButtonAction>
-            <DownloadButtonAction
-              onPress={() =>
-                downloadResult && fileDownload.pause(downloadResult)
-              }
-            >
-              <AntDesign name="pause" size={24} color="white" />
-            </DownloadButtonAction>
-            <DownloadButtonAction
-              onPress={() =>
-                downloadResult && fileDownload.resume(downloadResult)
-              }
-            >
-              <Entypo name="controller-play" size={24} color="white" />
-            </DownloadButtonAction>
-          </View>
-        </View>
+        <HomeContainerContent
+          key={`${v.id}`}
+          video={v}
+          onStart={handleDownloadPress}
+          onPause={handlePause}
+          onResume={handleResume}
+        />
       );
     },
-    [downloadResult, fileDownload, handleDownloadPress]
+    [handleDownloadPress, handlePause, handleResume]
   );
 
   const Memoized = useMemo(() => {
