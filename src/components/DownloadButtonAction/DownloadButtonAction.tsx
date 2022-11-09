@@ -10,7 +10,15 @@ export function DownloadButtonAction({
   children,
 }: DownloadButtonActionProps) {
   return (
-    <Pressable onPress={onPress} style={styles.button}>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.button,
+        pressed
+          ? { backgroundColor: "#d3bce6" }
+          : { backgroundColor: "#c7a0e6" },
+      ]}
+    >
       {children}
     </Pressable>
   );
@@ -18,7 +26,6 @@ export function DownloadButtonAction({
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: "#c7a0e6",
     height: 45,
     width: 45,
     borderRadius: 45 / 2,
