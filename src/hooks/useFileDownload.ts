@@ -61,13 +61,22 @@ export function useFileDownload() {
     }
   }
 
-  async function resume(downloadResumable: DownloadResumable) {
+  async function resume(
+    downloadResumable: DownloadResumable,
+    end: (v: "SUCCESS" | "ERROR" | "IDLE") => void
+  ) {
     try {
       const result = await downloadResumable.resumeAsync();
 
       if (result === undefined) {
         throw new Error("Resume download undefined exception");
       }
+
+      if (result === null) {
+        return;
+      }
+
+      end("SUCCESS");
     } catch (e) {
       console.error(e);
     }

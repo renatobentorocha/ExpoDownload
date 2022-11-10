@@ -76,7 +76,9 @@ export function HomeContainer() {
 
   const handleResume = useCallback(() => {
     if (downloadResult) {
-      fileDownload.resume(downloadResult);
+      fileDownload.resume(downloadResult, (v: "SUCCESS" | "ERROR" | "IDLE") =>
+        setDownloadEndWith(v)
+      );
     }
   }, [downloadResult, fileDownload]);
 
