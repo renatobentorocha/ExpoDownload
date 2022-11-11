@@ -48,7 +48,7 @@ function BottomBarSlot({ style, children }: BottomTabBarSlot) {
     <View
       style={[
         {
-          width: Dimensions.get("screen").width / 2 - 72,
+          width: (Dimensions.get("screen").width - 72) / 2,
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
