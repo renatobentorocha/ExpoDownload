@@ -1,93 +1,80 @@
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import React, { PropsWithChildren } from "react";
-import { Dimensions, View, Text, ViewStyle } from "react-native";
-import { PlayButtonContainer } from "../PlayButton";
-import { BottomBarContent } from "./BottomBarContent";
+import {
+  BottomTabDescriptorMap,
+  BottomTabNavigationEventMap,
+} from "@react-navigation/bottom-tabs/lib/typescript/src/types";
+import {
+  NavigationHelpers,
+  NavigationState,
+  ParamListBase,
+  TabNavigationState,
+} from "@react-navigation/native";
+import React from "react";
+
+import { BottomBarContent, SlotReturn } from "./BottomBarContent";
 
 type Props = BottomTabBarProps;
 
-type BottomTabBarSlot = PropsWithChildren & { style?: ViewStyle };
-type BottomTabBarItemsWrapper = PropsWithChildren & { style?: ViewStyle };
-type BottomTabBarItemText = { style?: ViewStyle; text: string };
+function slotItemProps(
+  fullRoutes: NavigationState["routes"],
+  routesHalf: NavigationState["routes"],
+  descriptors: BottomTabDescriptorMap,
+  state: TabNavigationState<ParamListBase>,
+  navigation: NavigationHelpers<ParamListBase, BottomTabNavigationEventMap>
+): Array<SlotReturn> {
+  return routesHalf.map((route) => {
+    const { options } = descriptors[route.key];
+    const label = options.title || route.name;
+    const focused = fullRoutes[state.index].name === route.name;
 
-function BottomBarItemText({ style, text }: BottomTabBarItemText) {
-  return (
-    <Text
-      style={[
-        { fontSize: 12, lineHeight: 16, fontWeight: "400", color: "#fff" },
-        style,
-      ]}
-    >
-      {text}
-    </Text>
-  );
-}
+    const onPress = () => {
+      const event = navigation.emit({
+        type: "tabPress",
+        target: route.key,
+        canPreventDefault: true,
+      });
 
-function BottomBarItemsWrapper({ style, children }: BottomTabBarItemsWrapper) {
-  return (
-    <View
-      style={[
-        {
-          width: Dimensions.get("screen").width,
-          position: "absolute",
-          height: 56,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-        },
-        style,
-      ]}
-    >
-      {children}
-    </View>
-  );
-}
+      if (!focused && !event.defaultPrevented) {
+        // The `merge: true` option makes sure that the params inside the tab screen are preserved
+        navigation.navigate({ name: route.name, merge: true, params: {} });
+      }
+    };
 
-function BottomBarSlot({ style, children }: BottomTabBarSlot) {
-  return (
-    <View
-      style={[
-        {
-          width: (Dimensions.get("screen").width - 72) / 2,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-        },
-        style,
-      ]}
-    >
-      {children}
-    </View>
-  );
+    const onLongPress = () => {
+      navigation.emit({
+        type: "tabLongPress",
+        target: route.key,
+      });
+    };
+
+    const tabBarIcon = () =>
+      options.tabBarIcon?.({ focused, color: "", size: 0 });
+
+    return {
+      tabBarIcon,
+      onPress,
+      onLongPress,
+      label,
+      index: route.name,
+      focused,
+    };
+  });
 }
 
 export function BottomBarContainer(props: Props) {
+  const { state, descriptors, navigation } = props;
+
+  function leftSlot() {
+    const left = state.routes.slice(0, Math.ceil(state.routes.length / 2));
+    return slotItemProps(state.routes, left, descriptors, state, navigation);
+  }
+
+  function rightSlot() {
+    const right = state.routes.slice(Math.ceil(state.routes.length / 2));
+    return slotItemProps(state.routes, right, descriptors, state, navigation);
+  }
+
   return (
-    <BottomBarContent
-      svg={{
-        width: Dimensions.get("screen").width,
-        style: { backgroundColor: "#0C0C33" },
-      }}
-      path={{
-        scaleX: Dimensions.get("screen").width / 375,
-      }}
-      bottom={
-        <View
-          style={{ height: props.insets.bottom, backgroundColor: "#131263" }}
-        />
-      }
-    >
-      <BottomBarItemsWrapper>
-        <BottomBarSlot style={{ paddingLeft: 16 }}>
-          <BottomBarItemText text="Home" />
-          <BottomBarItemText text="Download" />
-        </BottomBarSlot>
-        <PlayButtonContainer />
-        <BottomBarSlot style={{ paddingRight: 16 }}>
-          <BottomBarItemText text="Busca" />
-          <BottomBarItemText text="Perfil" />
-        </BottomBarSlot>
-      </BottomBarItemsWrapper>
-    </BottomBarContent>
+    <BottomBarContent {...props} leftSlot={leftSlot} rightSlot={rightSlot} />
   );
 }
