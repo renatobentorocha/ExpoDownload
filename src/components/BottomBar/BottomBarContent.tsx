@@ -101,6 +101,44 @@ function BottomBarSlot({ style, children }: BottomTabBarSlot) {
   );
 }
 
+function BottomBarSlotCenter({ style, children }: BottomTabBarSlot) {
+  return (
+    <View
+      style={[
+        {
+          width: 72,
+          height: 56,
+          alignItems: "center",
+          justifyContent: "center",
+          position: "absolute",
+          left: Dimensions.get("screen").width / 2 - 72 / 2,
+        },
+        style,
+      ]}
+    >
+      {children}
+    </View>
+  );
+}
+
+function PlayButtonWrapper({ style, children }: BottomTabBarSlot) {
+  return (
+    <View
+      style={[
+        {
+          alignItems: "center",
+          justifyContent: "center",
+          position: "absolute",
+          top: -56 / 2,
+        },
+        style,
+      ]}
+    >
+      {children}
+    </View>
+  );
+}
+
 export function BottomBarContent(props: Props) {
   function renderLeftSlot() {
     return props.leftSlot().map((slot) => {
@@ -143,7 +181,24 @@ export function BottomBarContent(props: Props) {
     >
       <BottomBarItemsWrapper>
         <BottomBarSlot>{renderLeftSlot()}</BottomBarSlot>
-        <PlayButtonContainer />
+
+        <BottomBarSlotCenter>
+          <PlayButtonWrapper>
+            <PlayButtonContainer />
+          </PlayButtonWrapper>
+          <Text
+            style={{
+              fontSize: 10,
+              fontWeight: "500",
+              lineHeight: 16,
+              position: "absolute",
+              bottom: 0,
+              color: "#D3D8DD",
+            }}
+          >
+            CANAIS
+          </Text>
+        </BottomBarSlotCenter>
         <BottomBarSlot>{renderRightSlot()}</BottomBarSlot>
       </BottomBarItemsWrapper>
     </BottomBarBackground>
